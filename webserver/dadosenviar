@@ -1,0 +1,19 @@
+AT+CWJAP="casa n","26071989"
+
+AT+CIPSTART="TCP","192.168.0.106",5000
+
+AT+CIPSEND=43
+
+GET /home HTTP/1.0
+Host: 192.168.0.106
+
+AT+CIPSEND=117
+
+POST /home HTTP/1.0
+Host: 192.168.0.106
+Content-Type: application/json
+Content-Length: 18
+
+{"hello":"world"}
+
+AT+CIPCLOSE
