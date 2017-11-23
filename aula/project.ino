@@ -7,30 +7,30 @@
 
 DHT dht(DHTPIN, DHTTYPE);
 
-#define rede "casa n"
-#define senha "26071989"
-#define server "192.168.0.106"
-#define PORT 5000
-
-// constants won't change. They're used here to set pin numbers:
-const int buttonPin = 7;     // the number of the pushbutton pin
-const int ledPin =  13;      // the number of the LED pin
-
-// variables will change:
-int buttonState = 0;         // variable for reading the pushbutton status
+#define rede "SSID"
+#define senha "PASSWORD"
+#define server "YOUR-IP"
+#define PORT 80
 
 SoftwareSerial esp8266(9, 10);
 
 #define DEBUG true
 
 void conectaresp(){
+
+  while(esp8266.available()){
+    Serial.write(esp8266.read());
+  }
   String comando="AT+CWJAP=\"";
   comando+=rede;
   comando+="\",\"";
   comando+=senha;  
   comando+="\"\r\n";
   esp8266.println(comando);
-  delay(5000);
+  delay(8000);
+  while(esp8266.available()){
+    Serial.write(esp8266.read());
+  }
 }
 
 void connectserver(){
@@ -40,6 +40,7 @@ void connectserver(){
   comando += PORT;
   comando += "";
   esp8266.println(comando);
+  delay(500);
 }
 
 void disconnectserver(){
@@ -58,7 +59,7 @@ void senddata(float umid, float temp){
   payload += "\"}\r\n\r\n";
 
   //monta o comando do post
-  String comando="POST /home HTTP/1.0\r\n";
+  String comando="POST /arduino/ HTTP/1.0\r\n";
   comando += "Host: \"";
   comando += server;
   comando += "\"\r\n";
@@ -72,17 +73,16 @@ void senddata(float umid, float temp){
   sendheader += comando.length();
 
   connectserver();
-  delay(500);
+  delay(1000);
   esp8266.println(sendheader);
-  delay(500);
+  delay(2000);
   esp8266.println(comando);
   Serial.println(comando);
-  delay(500);
+  delay(1000);
   disconnectserver();
-  delay(500);
+  delay(1000);
 
 }
-
 
 
 void setup() {
@@ -91,9 +91,8 @@ void setup() {
   delay(3000);
   esp8266.begin(115200);
   delay(3000);
-  pinMode(ledPin, OUTPUT);
-  // initialize the pushbutton pin as an input:
-  pinMode(buttonPin, INPUT);
+  esp8266.println("AT+RST");
+  delay(3000);
   Serial.println("Conectando");
   conectaresp();
 }
@@ -103,9 +102,5 @@ void loop() {
   float t = dht.readTemperature(); //Le o valor da temperatura]]
 
   senddata(u, t);
-
-  if(esp8266.available()){
-    Serial.write(esp8266.read());
-  }
   
 }
